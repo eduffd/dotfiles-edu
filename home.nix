@@ -27,6 +27,26 @@ in
     autosuggestion.enable = true;      # ghost text from history
     syntaxHighlighting.enable = true;  # commands turn green when valid
     initContent = ''
+      export PATH="$HOME/.local/bin:$PATH"
+
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+      [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+      export BUN_INSTALL="$HOME/.bun"
+      export PATH="$BUN_INSTALL/bin:$PATH"
+
+      export PNPM_HOME="$HOME/Library/pnpm"
+      case ":$PATH:" in
+        *":$PNPM_HOME/bin:"*) ;;
+        *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+      esac
+
+      fpath=("$HOME/.docker/completions" $fpath)
+      autoload -Uz compinit
+      (( ''${+_comps[docker]} )) || compinit
+
       bindkey '^f' autosuggest-accept
     '';
     shellAliases = {
@@ -75,6 +95,8 @@ in
 
   home.file.".claude/CLAUDE.md".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
+  home.file.".claude/pstack-models.md".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/pstack-models.md";
   home.file.".codex/AGENTS.md".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
   home.file.".config/opencode/AGENTS.md".source =

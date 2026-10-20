@@ -21,3 +21,6 @@ result-*
 .no-mistakes/
 
 .audit/
+
+# verify skill proof artifacts - local evidence, never commit
+.claude/skills/verify/artifacts/

@@ -5,9 +5,16 @@ set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
-echo "==> Step 1: Determinate Nix"
+echo "==> Step 1: Nix"
 if command -v nix >/dev/null 2>&1; then
   echo "    nix already installed, skipping"
+elif [ -x /nix/var/nix/profiles/default/bin/nix ]; then
+  echo "    existing nix found at /nix/var/nix/profiles/default/bin"
+  export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+  if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+    # shellcheck disable=SC1091
+    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  fi
 else
   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix \
     | sh -s -- install --no-confirm
@@ -15,12 +22,28 @@ else
   . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 fi
 
-echo "==> Step 2: symlink this repo to ~/.dotfiles"
+echo "==> Step 2: Homebrew"
+# nix-darwin manages the Homebrew prefix, but it does not install Homebrew.
+# Without this step a fresh Mac would skip the homebrew activation entirely.
+if [ "$(uname -m)" = "arm64" ]; then
+  HOMEBREW_PREFIX=/opt/homebrew
+else
+  HOMEBREW_PREFIX=/usr/local
+fi
+if [ -x "$HOMEBREW_PREFIX/bin/brew" ]; then
+  echo "    Homebrew already installed, skipping"
+else
+  HOMEBREW_INSTALLER="$(curl --proto '=https' --tlsv1.2 -sSf -L https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+    || { echo "    Could not download the Homebrew installer."; exit 1; }
+  NONINTERACTIVE=1 /bin/bash -c "$HOMEBREW_INSTALLER"
+fi
+
+echo "==> Step 3: symlink this repo to ~/.dotfiles"
 # home.nix resolves its mkOutOfStoreSymlink paths through ~/.dotfiles, so this
 # has to exist before the first switch or the build will fail to find them.
 ln -sfn "$DIR" ~/.dotfiles
 
-echo "==> Step 3: personalize the configured username"
+echo "==> Step 4: personalize the configured username"
 # Do this before any sudo call: sudo resets $USER to root, so whoami has to
 # run as the real interactive user first.
 REAL_USER="$(whoami)"
@@ -43,7 +66,7 @@ else
   echo "    flake.nix already matches \"$REAL_USER\", nothing to do."
 fi
 
-echo "==> Step 4: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
+echo "==> Step 5: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
 # darwin-rebuild doesn't exist yet on a fresh machine, so run it straight
 # from the flake this once. After this, rebuild.sh works normally.
 # This fetches the darwin-rebuild tool from the nix-darwin-26.05 release branch,
@@ -55,9 +78,8 @@ echo "==> Step 4: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
 NIX_BIN="$(command -v nix)"
 # "mac" is the flake host label - if you renamed it, change it in flake.nix
 # and rebuild.sh too.
-sudo "$NIX_BIN" run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- \
+sudo "$NIX_BIN" --extra-experimental-features 'nix-command flakes' \
+  run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- \
   switch --flake ~/.dotfiles#mac
-# If this still fails with "nix: command not found", open a new terminal
-# (Determinate adds nix to new shells' PATH) and re-run ./bootstrap.sh.
 
 echo "==> Done. Use ./rebuild.sh for future changes."

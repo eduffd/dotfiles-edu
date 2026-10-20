@@ -1,7 +1,81 @@
 {
-  "theme": "dark-ansi",
+  "skillListingBudgetFraction": 0.05,
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "0",
+    "CLAUDE_CODE_ATTRIBUTION_HEADER": "0",
+    "_dsf_ANTHROPIC_BASE_URL": "http://localhost:8000",
+    "_ANTHROPIC_BASE_URL": "http://192.168.0.31:8080",
+    "ANTHROPIC_AUTH_TOKEN": "local",
+    "ANTHROPIC_API_KEY": "",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "DeepSeek-V4.1-Flash-1017",
+    "ANTHROPIC_DEFAULT_FABLE_MODEL": "DeepSeek-V4.1-Flash-1017",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "DeepSeek-V4.1-Flash-1017",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "DeepSeek-V4.1-Flash-1017",
+    "ANTHROPIC_DEFAULT_MODEL": "DeepSeek-V4.1-Flash-1017",
+    "ANTHROPIC_MODEL": "DeepSeek-V4.1-Flash-1017",
+    "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "500000",
+    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "250000",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "32768",
+    "CLAUDE_CODE_NEW_INIT": "1",
+    "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1",
+    "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1",
+    "_ENABLE_TOOL_SEARCH": "true",
+    "CLAUDE_CODE_SHELL": "/bin/bash"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "deny": [
+      "EnterPlanMode",
+      "ExitPlanMode",
+      "DesignSync",
+      "NotebookEdit",
+      "PushNotification",
+      "RemoteTrigger",
+      "ReportFindings",
+      "ScheduleWakeup",
+      "WebSearch",
+      "WebFetch"
+    ]
+  },
+  "disableClaudeAiConnectors": true,
+  "disableBundledSkills": true,
+  "disableRemoteControl": true,
+  "disableWorkflows": false,
+  "disableArtifact": true,
   "statusLine": {
     "type": "command",
-    "command": "input=$(cat); model=$(echo \"$input\" | jq -r '.model.display_name'); used=$(echo \"$input\" | jq -r '.context_window.used_percentage // empty'); if [ -n \"$used\" ]; then printf \"%s | ctx: %.0f%% used\" \"$model\" \"$used\"; else printf \"%s\" \"$model\"; fi"
-  }
+    "command": "npx -y ccstatusline@latest",
+    "padding": 0,
+    "refreshInterval": 10
+  },
+  "enabledPlugins": {
+    "pstack@pstack-claude": true
+  },
+  "extraKnownMarketplaces": {
+    "pstack-claude": {
+      "source": {
+        "source": "github",
+        "repo": "michael-denyer/pstack-claude"
+      }
+    }
+  },
+  "modelSettings": {
+    "qwen3.8-flash-next": {
+      "effortLevel": "xhigh"
+    },
+    "glm-5.3-flash-exl3": {
+      "effortLevel": "high"
+    }
+  },
+  "pluginConfigs": {},
+  "tui": "fullscreen",
+  "autoMemoryEnabled": false,
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "dark",
+  "verbose": true,
+  "autoCompactEnabled": true
 }
